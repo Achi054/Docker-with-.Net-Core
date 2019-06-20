@@ -72,6 +72,15 @@
   docker save mcr.microsoft.com/windows/servercore/iis -o iis.tar
   ```
 
+- Expose host drive to container
+  Right click on the Docker and select `Settings`.<br/>
+  Select `Shared Drives`, click on the `C:` drive and `Apply` <br/>
+  Run the below command
+
+  ```
+  docker run --rm -v c:/Users:/data alpine ls /data
+  ```
+
 - Setting up a container for `hello-world`
 
   ```
@@ -106,3 +115,87 @@
   ```
   renders container details, check for `Networks\IPaddress`
 - Navigate to that IP address in browser
+
+# Hosting website static files
+
+- Volume mount
+- Copy into the container file system
+- Bake file into image
+
+## Volume mount
+
+- Create a static html file, `user.html`
+  ```
+  <!DOCTYPE html>
+  <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+      <meta charset="utf-8" />
+      <title>Static Website</title>
+  </head>
+  <body class="site">
+      <h2>Static Website</h2>
+  </body>
+  ```
+- Pull the image for Linx server `nginx` from [dockerhub](https://hub.docker.com/_/nginx)
+  ```
+  docker pull alpine
+  ```
+- Run the container
+  ```
+  docker run -it -p 8080:80 nginx
+  ```
+  Verify: http://localhost:8080 check nginx should be running
+- Push static file from Host(local system location) to container(docker container)
+  ```
+  docker run -it -p 8080:80 -v C:\TigerBox\POC\StaticWebsite:/usr/share/nginx/html nginx
+  ```
+- Run on browser [Website](`http://localhost:8080/user.html`)
+
+## Copy contents into the container file system
+
+- Running `nginx` as a background process
+
+  ```
+  docker run -d -p 8080:80 --name nginx-server nginx
+  ```
+
+  `-d` denots running daemon as a background process
+
+- Navigate to container through bash prompt
+
+  ```
+  docker exec -it nginx-server bash
+  ```
+
+- Exit out and copy from Host to Continer file system
+
+  ```
+  docker cp C:\TigerBox\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html
+
+  Validate:
+  docker exec nginx-server ls usr/share/nginx/html
+  ```
+
+## Bake file into image
+
+- Create a image out of the copied content
+
+  ```
+  Check container files:
+  docker cp C:\TigerBox\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html
+
+  Create image:
+  docker commit nginx-server user-static:nginx
+
+  Verify:
+  docker image ls
+  ```
+
+- Run the image to a new contaniner on a different port
+
+  ```
+  docker run -d -p 8090:80 --name user-static:server user-static:nginx
+  ```
+
+  Verify:
+  Open [Website](http://localhost:8090/User.html)

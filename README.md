@@ -147,7 +147,7 @@
   Verify: http://localhost:8080 check nginx should be running
 - Push static file from Host(local system location) to container(docker container)
   ```
-  docker run -it -p 8080:80 -v C:\TigerBox\POC\StaticWebsite:/usr/share/nginx/html nginx
+  docker run -it -p 8080:80 -v .\POC\StaticWebsite:/usr/share/nginx/html nginx
   ```
 - Run on browser [Website](`http://localhost:8080/user.html`)
 
@@ -170,7 +170,7 @@
 - Exit out and copy from Host to Continer file system
 
   ```
-  docker cp C:\TigerBox\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html
+  docker cp .\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html
 
   Validate:
   docker exec nginx-server ls usr/share/nginx/html
@@ -182,7 +182,7 @@
 
   ```
   Check container files:
-  docker cp C:\TigerBox\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html
+  docker cp .\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html
 
   Create image:
   docker commit nginx-server user-static:nginx
@@ -199,3 +199,65 @@
 
   Verify:
   Open [Website](http://localhost:8090/User.html)
+
+# Docker file
+
+A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using docker build users can create an automated build that executes several command-line instructions in succession.
+
+## Creating a docker file
+
+    ```
+    FROM nginx
+    COPY app /usr/share/nginx/html
+    ```
+
+`FROM nginx` command is similar to `docker run -d -p 8080:80 --name nginx-server nginx`<br/><br/>
+`COPY app /usr/share/nginx/html` is similar to `docker cp .\POC\StaticWebsite\. nginx-server:/usr/share/nginx/html` <br/>
+
+To run the file use
+
+```
+docker build -t static-usr:latest .
+```
+
+## Docker file for Windows
+
+- Create a `Dockerfile` with the below content
+
+  ```
+  FROM microsoft/iis:nanoserver
+
+  COPY . c:/inetpub/wwwroot
+  ```
+
+- Place the file in the path of the host website content
+- Run docker file
+  ```
+  docker build -t iis-usr .
+  ```
+- Create a container
+  ```
+  docker run -d -p 8000:80 --name static-usr iis-usr
+  ```
+
+## Taging the image
+
+- Tag your image
+  ```
+  docker tag <image-name>:latest <your-image-name>:latest
+  ```
+
+## Push to Docker Hub repository
+
+- Login
+
+  ```
+  docker login
+  ```
+
+  Provide credentials
+
+- Push to repository
+  ```
+  docker push <repository-name>/iis-user:latest
+  ```

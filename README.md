@@ -261,3 +261,68 @@ docker build -t static-usr:latest .
   ```
   docker push <repository-name>/iis-user:latest
   ```
+
+# Docker for Microsoft Server
+
+- Pull the image
+  ```
+  docker pull microsoft/mssql-server-windows-developer
+  ```
+- Run the image
+
+  ```
+  docker run -d -p 1433:1433 -e sa_password=<sa_password> -e ACCEPT_EULA=Y microsoft/mssql-server-windows-developer
+  ```
+
+  -e: Enviroment
+  sa_password: User sa password
+  ACCEPT_EULA: Confirms acceptance of the end user licensing agreement found
+
+- Working with DB
+
+  ```
+  docker exec -it local-db microsoft/mssql-server-windows-developer --user=<user_name> --password=<password>
+  ```
+
+- Validate container instance
+
+  ```
+  docker logs <process_id>
+  ```
+
+- Volumes
+
+  ```
+  docker run -d -p 1433:1433 -e sa_password=<sa_password> -e ACCEPT_EULA=Y microsoft/mssql-server-windows-developer -v db:/var/lib/msserver
+
+  docker volume ls
+  ```
+
+  Creates a dedicated space to hold data
+
+## Handling Containers and Images
+
+- Stopping all running containers
+
+  ```
+  docker stop $(docker ps -aq)
+  ```
+
+  Stops all the running containers
+
+- Removing all the containers
+
+  ```
+  docker rm -f $(docker ps -aq)
+  ```
+
+- Removing all the volumes
+
+  ```
+  docker volume rm -f $(docker volumn ls -q)
+  ```
+
+- Removing volumes on removal of container
+  ```
+  docker rm -fv <container-id/container-name>
+  ```
